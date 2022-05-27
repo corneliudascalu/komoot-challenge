@@ -1,8 +1,12 @@
 package com.corneliudascalu.challenge
 
 import android.Manifest
+import android.content.ComponentName
+import android.content.Intent
+import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.IBinder
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
@@ -11,16 +15,16 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.startForegroundService
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.corneliudascalu.challenge.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
-    var started = false
-    val adapter = PhotoAdapter()
-    lateinit var permissionLauncher: ActivityResultLauncher<Array<String>>
+    private var isUserWalking = false
+    private val adapter = PhotoAdapter()
 
     // TODO
-    val viewModel = WalkViewModel()
+    private val viewModel = WalkViewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,19 +35,35 @@ class MainActivity : AppCompatActivity() {
         binding.recyclerView.adapter = adapter
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
 
-        viewModel.photos.observe(this) { state ->
-            started = state.startVisible.not()
+        viewModel.uiState.observe(this) { state ->
+            isUserWalking = state.isUserWalking
             invalidateOptionsMenu()
             adapter.submitList(state.photos.map { it.url })
             binding.recyclerView.scrollToPosition(0)
+
+            // TODO Extract location service logic to a delegate or something
+            toggleLocationService(isUserWalking)
         }
 
         preparePermissionLauncher()
     }
 
+    override fun onStart() {
+        super.onStart()
+        if (isUserWalking) {
+            bindService(Intent(this, LocationService::class.java), locationServiceConnection, BIND_AUTO_CREATE)
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        locationService?.also { unbindService(locationServiceConnection) }
+        locationService = null
+    }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menu.clear()
-        menuInflater.inflate(if (started) R.menu.menu_stop else R.menu.menu_start, menu)
+        menuInflater.inflate(if (isUserWalking) R.menu.menu_stop else R.menu.menu_start, menu)
         return true
     }
 
@@ -62,6 +82,8 @@ class MainActivity : AppCompatActivity() {
         }
         return super.onOptionsItemSelected(item)
     }
+
+    private lateinit var permissionLauncher: ActivityResultLauncher<Array<String>>
 
     private fun preparePermissionLauncher() {
         permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
@@ -83,5 +105,35 @@ class MainActivity : AppCompatActivity() {
         } else {
             viewModel.start()
         }
+    }
+
+    private val locationServiceConnection = LocationServiceConnection()
+    private var locationService: LocationService? = null
+
+    private fun toggleLocationService(isUserWalking: Boolean) {
+        if (isUserWalking) {
+            if (locationService == null) {
+                startForegroundService(applicationContext, Intent(this, LocationService::class.java))
+                bindService(Intent(this, LocationService::class.java), locationServiceConnection, BIND_AUTO_CREATE)
+            }
+        } else {
+            locationService?.also {
+                unbindService(locationServiceConnection)
+                locationService?.stopForeground(true)
+                locationService?.stopSelf()
+                locationService = null
+            }
+        }
+    }
+
+    private inner class LocationServiceConnection : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            locationService = (service as LocationService.LocationBinder).getService()
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            locationService = null
+        }
+
     }
 }

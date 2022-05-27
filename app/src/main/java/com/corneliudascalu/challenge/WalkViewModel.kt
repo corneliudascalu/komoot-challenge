@@ -11,10 +11,13 @@ import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 
 class WalkViewModel : ViewModel() {
-    private var increment = 1
-    private val id get() = increment++
     private var isUserWalking = false
-    private val _photos: MutableLiveData<ScreenState> = MutableLiveData(ScreenState(true, listOf()))
+    private val _uiState: MutableLiveData<ScreenState> = MutableLiveData(
+        ScreenState(
+            isUserWalking = false,
+            photos = listOf()
+        )
+    )
     private val flickrRepo = FlickrRepo()
     private val tick = flow {
         while (isUserWalking) {
@@ -22,7 +25,7 @@ class WalkViewModel : ViewModel() {
             delay(3000)
         }
     }
-    val photos: LiveData<ScreenState> get() = _photos
+    val uiState: LiveData<ScreenState> get() = _uiState
 
     fun start() {
         isUserWalking = true
@@ -30,9 +33,14 @@ class WalkViewModel : ViewModel() {
             tick.collect {
                 val photo = flickrRepo.getOnePhoto()
                 if (photo != null) {
-                    val newPhotos = _photos.value?.photos?.toMutableList() ?: mutableListOf()
+                    val newPhotos = _uiState.value?.photos?.toMutableList() ?: mutableListOf()
                     newPhotos.add(WalkPhoto(photo.url, LocalDateTime.now()))
-                    _photos.postValue(_photos.value?.copy(startVisible = isUserWalking.not(), photos = newPhotos.sortedDescending()))
+                    _uiState.postValue(
+                        _uiState.value?.copy(
+                            isUserWalking = isUserWalking,
+                            photos = newPhotos.sortedDescending()
+                        )
+                    )
                 } else {
                     // TODO Widen the search area?
                 }
@@ -42,7 +50,12 @@ class WalkViewModel : ViewModel() {
 
     fun stop() {
         isUserWalking = false
+        _uiState.postValue(
+            _uiState.value?.copy(
+                isUserWalking = isUserWalking
+            )
+        )
     }
 }
 
-data class ScreenState(val startVisible: Boolean, val photos: List<WalkPhoto>)
+data class ScreenState(val isUserWalking: Boolean, val photos: List<WalkPhoto>)
