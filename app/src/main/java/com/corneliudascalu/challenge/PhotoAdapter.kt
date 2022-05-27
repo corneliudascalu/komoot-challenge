@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.corneliudascalu.challenge.databinding.ItemPhotoBinding
 
 class PhotoAdapter : ListAdapter<String, PhotoViewHolder>(DiffUtil) {
@@ -31,6 +32,9 @@ class PhotoAdapter : ListAdapter<String, PhotoViewHolder>(DiffUtil) {
 class PhotoViewHolder(parent: ViewGroup) : RecyclerView.ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_photo, parent, false)) {
     val binding = ItemPhotoBinding.bind(itemView)
     fun bind(url: String) {
-        binding.photoUrl.text = url
+        Glide.with(binding.root)
+            .load(url)
+            .centerCrop()
+            .into(binding.flickrPhoto)
     }
 }

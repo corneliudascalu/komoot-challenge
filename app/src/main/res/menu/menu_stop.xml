@@ -2,12 +2,8 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/menuStart"
-        android:title="Start"
-        app:showAsAction="always" />
-    <item
-        android:visible="false"
         android:id="@+id/menuStop"
         android:title="Stop"
         app:showAsAction="always" />
+    
 </menu>
