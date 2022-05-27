@@ -29,9 +29,13 @@ class WalkViewModel : ViewModel() {
         viewModelScope.launch {
             tick.collect {
                 val photo = flickrRepo.getOnePhoto()
-                val newPhotos = _photos.value?.photos?.toMutableList() ?: mutableListOf()
-                newPhotos.add(WalkPhoto(photo.url, LocalDateTime.now()))
-                _photos.postValue(_photos.value?.copy(startVisible = isUserWalking.not(), photos = newPhotos.sortedDescending()))
+                if (photo != null) {
+                    val newPhotos = _photos.value?.photos?.toMutableList() ?: mutableListOf()
+                    newPhotos.add(WalkPhoto(photo.url, LocalDateTime.now()))
+                    _photos.postValue(_photos.value?.copy(startVisible = isUserWalking.not(), photos = newPhotos.sortedDescending()))
+                } else {
+                    // TODO Widen the search area?
+                }
             }
         }
     }

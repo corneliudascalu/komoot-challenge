@@ -62,6 +62,7 @@ interface FlickrApi {
     ): FlickrSearchResultsWrapper
 }
 
+// TODO Create a type adapter to strip the unnecessary data
 data class FlickrSearchResultsWrapper(val photos: FlickrSearchResultsPage)
 data class FlickrSearchResultsPage(val page: Int, val photo: List<FlickrPhoto>)
 data class FlickrPhoto(val id: String, val owner: String, val secret: String, val server: String, val title: String) {

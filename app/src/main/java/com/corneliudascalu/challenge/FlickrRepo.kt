@@ -17,7 +17,12 @@ class FlickrRepo {
         .create(FlickrApi::class.java)
 
 
-    suspend fun getOnePhoto(): FlickrPhoto {
-        return retrofit.search("21d94b9df684d19bc7afc78ec43e9503", 46.7566693, 23.6075734).photos.photo.random()
+    suspend fun getOnePhoto(): FlickrPhoto? {
+        // TODO Error handling
+        return try {
+            retrofit.search("21d94b9df684d19bc7afc78ec43e9503", 46.7566693, 23.6075734).photos.photo.random()
+        } catch (e: Exception) {
+            null
+        }
     }
 }
