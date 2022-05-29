@@ -38,7 +38,7 @@ const val CHANNEL_ID = "ServiceChannel"
 class LocationService : Service() {
     private val locationRequest = LocationRequest.create().apply {
         interval = 3000
-        smallestDisplacement = 50f
+        //smallestDisplacement = 50f
     }
     private val coroutineScope = CoroutineScope(Dispatchers.IO + Job())
     private val fusedLocationClient: FusedLocationProviderClient by lazy { LocationServices.getFusedLocationProviderClient(this) }

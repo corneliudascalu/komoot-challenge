@@ -39,4 +39,8 @@ object FlickrRepo {
     fun getAll(): List<WalkPhoto> {
         return photoCache.sortedDescending()
     }
+
+    fun clear() {
+        photoCache.clear()
+    }
 }

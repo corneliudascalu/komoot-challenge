@@ -13,6 +13,7 @@ import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.startForegroundService
@@ -20,11 +21,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.corneliudascalu.challenge.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
-    private var isUserWalking = false
     private val adapter = PhotoAdapter()
 
-    // TODO ViewModelFactory
-    private val viewModel = WalkViewModel()
+    private val viewModel by viewModels<WalkViewModel>()
+    private val isUserWalking: Boolean get() = viewModel.uiState.value?.isUserWalking ?: false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,7 +36,6 @@ class MainActivity : AppCompatActivity() {
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
 
         viewModel.uiState.observe(this) { state ->
-            isUserWalking = state.isUserWalking
             invalidateOptionsMenu()
             adapter.submitList(state.photos.map { it.url })
             binding.recyclerView.scrollToPosition(0)

@@ -4,7 +4,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.gms.common.util.CollectionUtils.listOf
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -15,7 +14,7 @@ class WalkViewModel : ViewModel() {
     private val _uiState: MutableLiveData<ScreenState> = MutableLiveData(
         ScreenState(
             isUserWalking = false,
-            photos = listOf()
+            photos = emptyList()
         )
     )
     val uiState: LiveData<ScreenState> get() = _uiState
@@ -45,9 +44,11 @@ class WalkViewModel : ViewModel() {
 
     fun stop() {
         isUserWalking = false
+        FlickrRepo.clear()
         _uiState.postValue(
             _uiState.value?.copy(
-                isUserWalking = isUserWalking
+                isUserWalking = isUserWalking,
+                photos = emptyList()
             )
         )
     }
