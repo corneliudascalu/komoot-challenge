@@ -17,13 +17,21 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.startForegroundService
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.corneliudascalu.challenge.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
     private val adapter = PhotoAdapter()
 
-    private val viewModel by viewModels<WalkViewModel>()
+    private val viewModel by viewModels<WalkViewModel> {
+        object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return WalkViewModel(intent?.extras?.getBoolean(EXTRA_USER_WALKING) ?: false) as T
+            }
+        }
+    }
     private val isUserWalking: Boolean get() = viewModel.uiState.value?.isUserWalking ?: false
 
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -8,8 +8,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
-class WalkViewModel : ViewModel() {
-    private var isUserWalking = false
+class WalkViewModel(userWalking: Boolean) : ViewModel() {
+    private var isUserWalking = userWalking
 
     private val _uiState: MutableLiveData<ScreenState> = MutableLiveData(
         ScreenState(

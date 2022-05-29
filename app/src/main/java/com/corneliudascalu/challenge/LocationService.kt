@@ -33,12 +33,13 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 
 const val CHANNEL_ID = "ServiceChannel"
+const val EXTRA_USER_WALKING = "isUserWalking"
 
 @SuppressLint("MissingPermission")
 class LocationService : Service() {
     private val locationRequest = LocationRequest.create().apply {
         interval = 3000
-        //smallestDisplacement = 50f
+        smallestDisplacement = 100f
     }
     private val coroutineScope = CoroutineScope(Dispatchers.IO + Job())
     private val fusedLocationClient: FusedLocationProviderClient by lazy { LocationServices.getFusedLocationProviderClient(this) }
@@ -76,11 +77,13 @@ class LocationService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        val mainActivityIntent = Intent(this, MainActivity::class.java)
+        mainActivityIntent.putExtra(EXTRA_USER_WALKING, true)
         val notification: Notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("Walking")
             .setContentText("Location updates are collected every 100m")
             .setSmallIcon(com.google.android.material.R.drawable.abc_btn_check_material)
-            .setContentIntent(PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE))
+            .setContentIntent(PendingIntent.getActivity(this, 0, mainActivityIntent, PendingIntent.FLAG_IMMUTABLE))
             .setTicker("Location updates are collected every 100m")
             .build()
 

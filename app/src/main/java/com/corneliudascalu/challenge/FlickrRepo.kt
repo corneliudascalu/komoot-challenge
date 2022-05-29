@@ -32,6 +32,7 @@ object FlickrRepo {
         }
     }
 
+    // TODO Use a local storage cache
     fun store(photo: FlickrPhoto) {
         photoCache.add(WalkPhoto(photo.url, LocalDateTime.now()))
     }
