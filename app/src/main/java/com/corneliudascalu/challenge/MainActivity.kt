@@ -23,7 +23,7 @@ class MainActivity : AppCompatActivity() {
     private var isUserWalking = false
     private val adapter = PhotoAdapter()
 
-    // TODO
+    // TODO ViewModelFactory
     private val viewModel = WalkViewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -119,6 +119,7 @@ class MainActivity : AppCompatActivity() {
         } else {
             locationService?.also {
                 unbindService(locationServiceConnection)
+                locationService?.stopWalking()
                 locationService?.stopForeground(true)
                 locationService?.stopSelf()
                 locationService = null
@@ -129,11 +130,13 @@ class MainActivity : AppCompatActivity() {
     private inner class LocationServiceConnection : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             locationService = (service as LocationService.LocationBinder).getService()
+            if (locationService != null) {
+                viewModel.walk(locationService!!.photoFlow)
+            }
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
             locationService = null
         }
-
     }
 }
